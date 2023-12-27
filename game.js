@@ -1,4 +1,5 @@
-(function () {
+(
+  function () {
   // Constants Variable
   var PACMAN_SPEED = 2,
     PACMAN_RADIUS = 0.25;
