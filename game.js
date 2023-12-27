@@ -271,7 +271,6 @@
   var createGhost = (function () {
     // Create a cone-shaped geometry for the ghost's body
     const ghostBodyGeometry = new THREE.SphereGeometry(GHOST_RADIUS, 16, 16); // Adjust dimensions as needed
-    // ghostBodyGeometry.translate(0, 1, 0); // Position the cone correctly
 
     // Create a smaller, inverted cone for the head
     const ghostHeadGeometry = new THREE.CylinderGeometry(0.1, 0.15, 0.3); // Adjust dimensions as needed
@@ -369,7 +368,7 @@
 
     var previousFrameTime = window.performance.now();
 
-    // How many seconds the animation has progressed in total.
+    // total waktu animation dalam sekon
     var animationSeconds = 0;
 
     var render = function () {
@@ -377,16 +376,8 @@
       var animationDelta = (now - previousFrameTime) / 1000;
       previousFrameTime = now;
 
-      // requestAnimationFrame will not call the callback if the browser
-      // isn't visible, so if the browser has lost focus for a while the
-      // time since the last frame might be very large. This could cause
-      // strange behavior (such as objects teleporting through walls in
-      // one frame when they would normally move slowly toward the wall
-      // over several frames), so make sure that the delta is never too
-      // large.
       animationDelta = Math.min(animationDelta, 1 / 30);
 
-      // Keep track of how many seconds of animation has passed.
       animationSeconds += animationDelta;
 
       callback(animationDelta, animationSeconds);
@@ -397,10 +388,9 @@
     requestFrameFunction(render);
   };
 
-  // Main function
-  // =============
+  // Main 
   var main = function () {
-    // Game state variables
+    // buat keystate buat ngecek tombol yang ditekan
     var keys = createKeyState();
 
     var renderer = createRenderer();
@@ -409,6 +399,7 @@
     var map = createMap(scene, LEVEL);
     var numDotsEaten = 0;
 
+    // kamera
     var camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.1, 1000);
     camera.up.copy(UP);
     camera.targetPosition = new THREE.Vector3();
@@ -435,18 +426,20 @@
 
     var levelStartSound = new Audio("pacman_beginning.mp3");
     levelStartSound.preload = "auto";
-    // Play the level start sound as soon as the game starts.
+    // sound buat mulai game (opening)
     levelStartSound.autoplay = true;
 
+    // sound jika pacman mati
     var deathSound = new Audio("pacman_death.mp3");
     deathSound.preload = "auto";
 
+    // sound jika pacman makan hantu
     var killSound = new Audio("pacman_eatghost.mp3");
     killSound.preload = "auto";
 
     var remove = [];
 
-    // Create life images
+    // gambar lives
     var lives = 3;
     var livesContainer = document.getElementById("lives");
     for (var i = 0; i < lives; i++) {
@@ -457,7 +450,7 @@
       livesContainer.appendChild(life);
     }
 
-    // Main game logic
+    // logic game
     var update = function (delta, now) {
       updatePacman(delta, now);
 
@@ -469,8 +462,6 @@
         if (object.isTemporary === true && now > object.removeAfter) remove.push(object);
       });
 
-      // Cannot remove items from scene.children while iterating
-      // through it, so remove them after the forEach loop.
       remove.forEach(scene.remove, scene);
       for (item in remove) {
         if (remove.hasOwnProperty(item)) {
@@ -491,7 +482,7 @@
     var showText = function (message, size, now) {
       var textMaterial = new THREE.MeshPhongMaterial({ color: "red" });
 
-      // Show 3D text banner.
+      // menampilkan 3D text banner 
       var textGeometry = new THREE.TextGeometry(message, {
         size: size,
         height: 0.05,
@@ -500,14 +491,13 @@
 
       var text = new THREE.Mesh(textGeometry, textMaterial);
 
-      // Position text just above pacman.
+      // posisi text di atas pacman
       text.position.copy(pacman.position).add(UP);
 
-      // Rotate text so that it faces same direction as pacman.
+      // rotasi text sehingga berhadapan ke arah yang sama dengan pacman
       text.up.copy(pacman.direction);
       text.lookAt(text.position.clone().add(UP));
 
-      // Remove after 3 seconds.
       text.isTemporary = true;
       text.removeAfter = now + 3;
 
@@ -517,19 +507,19 @@
     };
 
     var updatePacman = function (delta, now) {
-      // Play chomp sound if player is moving.
-      if (!won && !lost && (keys["W"] || keys["S"])) {
+      // chomp sound jika pacman bergerak
+      if (!won && !lost && (keys["W"] || keys["S"] || keys["&"] || keys["("])) {
         chompSound.play();
       } else {
         chompSound.pause();
       }
 
-      // Move if we haven't died or won.
+      // pacman akan bergerak jika belum menang atau kalah
       if (!won && !lost) {
         movePacman(delta);
       }
 
-      // Check for win.
+      // cek jika pacman menang, jika iya maka akan menampilkan text "You won =D"
       if (!won && numDotsEaten === map.numDots) {
         won = true;
         wonTime = now;
@@ -539,20 +529,20 @@
         levelStartSound.play();
       }
 
-      // Go to next level 4 seconds after winning.
+      // naik level 4 sekon setelah menang 
       if (won && now - wonTime > 3) {
         // Reset pacman position and direction.
         pacman.position.copy(map.pacmanSpawn);
         pacman.direction.copy(LEFT);
         pacman.distanceMoved = 0;
 
-        // Reset dots, power pellets, and ghosts.
+        // Reset dots, power pellets, dan hantu.
         scene.children.forEach(function (object) {
           if (object.isDot === true || object.isPowerPellet === true) object.visible = true;
           if (object.isGhost === true) remove.push(object);
         });
 
-        // Increase speed.
+        // naikin speed
         PACMAN_SPEED += 1;
         GHOST_SPEED += 1;
 
@@ -561,7 +551,7 @@
         numGhosts = 0;
       }
 
-      // Reset pacman 4 seconds after dying.
+      // Reset pacman 4 sekon setelah mati
       if (lives > 0 && lost && now - lostTime > 4) {
         lost = false;
         pacman.position.copy(deathPosition);
@@ -571,13 +561,13 @@
 
       // Animate model
       if (lost) {
-        // If pacman got eaten, show dying animation.
+        // animation ketika pacman mati
         var angle = ((now - lostTime) * Math.PI) / 2;
         var frame = Math.min(pacman.frames.length - 1, Math.floor((angle / Math.PI) * pacman.frames.length));
 
         pacman.geometry = pacman.frames[frame];
       } else {
-        // Otherwise, show eating animation based on how much pacman has moved.
+        // animation ketika pacman bergerak
         var maxAngle = Math.PI / 4;
         var angle = (pacman.distanceMoved * 2) % (maxAngle * 2);
         if (angle > maxAngle) angle = maxAngle * 2 - angle;
@@ -589,41 +579,37 @@
 
     var _lookAt = new THREE.Vector3();
     var movePacman = function (delta) {
-      // Update rotation based on direction so that mouth is always facing forward.
-      // The "mouth" part is on the side of the sphere, make it "look" up but
-      // set the up direction so that it points forward.
+      // update rotasi pacman sehingga arah mulut akan menghadap ke arah yang sama dengan pacman
       pacman.up.copy(pacman.direction).applyAxisAngle(UP, -Math.PI / 2);
       pacman.lookAt(_lookAt.copy(pacman.position).add(UP));
       if (keys["L"]) {
-        // L - speedmoved
-        //pacman.translateOnAxis(pacman.direction, -PACMAN_SPEED * delta);
+        // L - nambah kecepatan
         pacman.translateOnAxis(LEFT, PACMAN_SPEED * delta * 1);
         pacman.distanceMoved += PACMAN_SPEED * delta * 1;
       }
-      // Move based on current keys being pressed.
-      if (keys["W"]) {
-        // W - move forward
-        //pacman.translateOnAxis(pacman.direction, PACMAN_SPEED * delta);
-        // Because we are rotating the object above using lookAt, "forward" is to the left.
+      // pergerakan sesuai dengan key yang ditekan
+      if (keys["W"] || keys["&"]) {
+        // W atau arrow up- move forward
         pacman.translateOnAxis(LEFT, PACMAN_SPEED * delta);
         pacman.distanceMoved += PACMAN_SPEED * delta;
       }
-      if (keys["A"]) {
-        // A - rotate left
+      if (keys["A"] || keys["%"]) {
+        // A atau arrow left - rotate left
         pacman.direction.applyAxisAngle(UP, (Math.PI / 2) * delta);
       }
-      if (keys["D"]) {
-        // D - rotate right
+      if (keys["D"] || keys["'"]) {
+        // D atau arrow right - rotate right
         pacman.direction.applyAxisAngle(UP, (-Math.PI / 2) * delta);
       }
-      if (keys["S"]) {
-        // S - move backward
-        //pacman.translateOnAxis(pacman.direction, -PACMAN_SPEED * delta);
+      if (keys["S"] || keys["("]) {
+        // S atau arrow down - move backward
         pacman.translateOnAxis(LEFT, -PACMAN_SPEED * delta);
         pacman.distanceMoved += PACMAN_SPEED * delta;
       }
 
-      // Check for collision with walls.
+      
+
+      // cek collision dengan wall
       var leftSide = pacman.position.clone().addScaledVector(LEFT, PACMAN_RADIUS).round();
       var topSide = pacman.position.clone().addScaledVector(TOP, PACMAN_RADIUS).round();
       var rightSide = pacman.position.clone().addScaledVector(RIGHT, PACMAN_RADIUS).round();
@@ -643,13 +629,13 @@
 
       var cell = getAt(map, pacman.position);
 
-      // Make pacman eat dots.
+      // pacman makan dots
       if (cell && cell.isDot === true && cell.visible === true) {
         removeAt(map, scene, pacman.position);
         numDotsEaten += 1;
       }
 
-      // make pacman eat hea
+      // pacman makan hea
       if (cell && cell.isHea === true && cell.visible === true) {
         removeAt(map, scene, pacman.position);
         lives += 1;
@@ -662,7 +648,7 @@
         }
       }
 
-      // Make pacman eat power pellets.
+      // pacman makan power pellet 
       pacman.atePellet = false;
       if (cell && cell.isPowerPellet === true && cell.visible === true) {
         removeAt(map, scene, pacman.position);
@@ -713,7 +699,7 @@
 
       moveGhost(ghost, delta);
 
-      // Check for collision between Pacman and ghost.
+      // cek collision dengan hantu
       if (!lost && !won && distance(pacman, ghost) < PACMAN_RADIUS + GHOST_RADIUS) {
         if (ghost.isAfraid === true) {
           remove.push(ghost);
@@ -722,7 +708,7 @@
           killSound.play();
         } else {
           lives -= 1;
-          // Unshow life
+          // life kurangi 1
           document.getElementsByClassName("life")[lives].style.display = "none";
 
           if (lives > 0) showText("You died =(", 0.1, now);
