@@ -1,6 +1,5 @@
 (function () {
-  // Constants
-  // =========
+  // Constants Variable
   var PACMAN_SPEED = 2,
     PACMAN_RADIUS = 0.25;
   var GHOST_SPEED = 1.5,
@@ -12,6 +11,8 @@
   var TOP = new THREE.Vector3(0, 1, 0);
   var RIGHT = new THREE.Vector3(1, 0, 0);
   var BOTTOM = new THREE.Vector3(0, -1, 0);
+
+  //   map
   var LEVEL = [
     "# # # # # # # # # # # # # # # # # # # # # # # # # # # #",
     "# . . . . . . . . . . . . # # . . . . . . . . . . . . #",
@@ -46,8 +47,7 @@
     "# # # # # # # # # # # # # # # # # # # # # # # # # # # #",
   ];
 
-  // Game-specific functions
-  // =======================
+  //   Membuat map
   var createMap = function (scene, levelDefinition) {
     var map = {};
     map.bottom = -(levelDefinition.length - 1);
@@ -60,18 +60,15 @@
 
     var x, y;
     for (var row = 0; row < levelDefinition.length; row++) {
-      // Set the coordinates of the map so that they match the
-      // coordinate system for objects.
+      // set koordinat map
       y = -row;
 
       map[y] = {};
 
-      // Get the length of the longest row in the level definition.
       var length = Math.floor(levelDefinition[row].length / 2);
-      //map.right = Math.max(map.right, length - 1);
       map.right = Math.max(map.right, length);
 
-      // Skip every second element, which is just a space for readability.
+      // looping untuk membaca map sesuai simbol yang didefinisikan
       for (var column = 0; column < levelDefinition[row].length; column += 2) {
         x = Math.floor(column / 2);
 
@@ -108,6 +105,7 @@
     return map;
   };
 
+  //   untuk mendapatkan posisi saat ini
   var getAt = function (map, position) {
     var x = Math.round(position.x),
       y = Math.round(position.y);
@@ -119,42 +117,19 @@
     return cell && cell.isWall === true;
   };
 
+  //   menghapus posisi sebelumnya
   var removeAt = function (map, scene, position) {
     var x = Math.round(position.x),
       y = Math.round(position.y);
     if (map[y] && map[y][x]) {
-      /*scene.remove(map[y][x]);
-            delete map[y][x];*/
-
-      // Don't actually remove, just make invisible.
       map[y][x].visible = false;
     }
   };
 
-  // let sandPlane = new THREE.BoxGeometry(35, 15);
-  // let sandMaterial = new THREE.MeshLambertMaterial({
-  //     map:sand
-
-  // });
-
-  // let plane = new THREE.Mesh(sandPlane,sandMaterial);
-  // plane.rotation.x = Math.PI / 2;
-  // plane.position.y = -5.5;
-  // plane.receiveShadow = true;
-  // scene.add(plane);
-
+  //   buat wall
   var createWall = (function () {
     var wallGeometry = new THREE.BoxGeometry(1, 1, 1);
-    // ganti warna tembok, pake texture
     var wallMaterial = new THREE.MeshLambertMaterial({ color: 0x4295f5 });
-
-    // const loader4 = new THREE.TextureLoader();
-    // const wall = loader4.load('./assets/wall1.jpg');
-    // wall.wrapS = THREE.RepeatWrapping;x
-    // wall.wrapT = THREE.RepeatWrapping;
-    // const repeats = 10000;
-    // wall.repeat.set(repeats, repeats);
-    // var wallMaterial = new THREE.MeshLambertMaterial({ map: wall });
 
     return function () {
       var wall = new THREE.Mesh(wallGeometry, wallMaterial);
@@ -164,10 +139,11 @@
     };
   })();
 
+  //   buat dot
   var createDot = (function () {
     var dotGeometry = new THREE.SphereGeometry(DOT_RADIUS);
     // buat makanannya
-    var dotMaterial = new THREE.MeshPhongMaterial({ color: 0xffdab9 }); // Paech color
+    var dotMaterial = new THREE.MeshPhongMaterial({ color: 0xffdab9 });
 
     return function () {
       var dot = new THREE.Mesh(dotGeometry, dotMaterial);
@@ -177,9 +153,10 @@
     };
   })();
 
+  //   buat pellet untuk menambah nyawa
   var createHea = (function () {
     var heaGeometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
-    var heaMaterial = new THREE.MeshPhongMaterial({ color: 0xfff12 }); // Paech color
+    var heaMaterial = new THREE.MeshPhongMaterial({ color: 0xfff12 });
 
     return function () {
       var hea = new THREE.Mesh(heaGeometry, heaMaterial);
@@ -189,11 +166,10 @@
     };
   })();
 
+  //   buat pellet untuk makan hantu
   var createPowerPellet = (function () {
-    // kalau mau ganti objek jg sabi
     var pelletGeometry = new THREE.SphereGeometry(PELLET_RADIUS, 12, 8);
-    // buat makanan power
-    var pelletMaterial = new THREE.MeshPhongMaterial({ color: 0xffdab9 }); // Paech color
+    var pelletMaterial = new THREE.MeshPhongMaterial({ color: 0xffdab9 });
 
     return function () {
       var pellet = new THREE.Mesh(pelletGeometry, pelletMaterial);
@@ -203,9 +179,10 @@
     };
   })();
 
+  //   set area
   var createRenderer = function () {
     var renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setClearColor(0xffe3fe, 1.0); // set warna area jadi hitam
+    renderer.setClearColor(0xffe3fe, 1.0);
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
 
@@ -215,16 +192,16 @@
   var createScene = function () {
     var scene = new THREE.Scene();
 
-    // Add lighting
-    scene.add(new THREE.AmbientLight(0x888888)); // lampu 1
-    var light = new THREE.SpotLight("white", 0.5); // lampu 2
-    light.position.set(0, 0, 50); // posisi lighting
+    // Menambah cahaya
+    scene.add(new THREE.AmbientLight(0x888888)); // cahaya 1
+    var light = new THREE.SpotLight("white", 0.5); // cahaya 2
+    light.position.set(0, 0, 50); // posisi cahaya
     scene.add(light);
 
     return scene;
   };
 
-  // CAMERA MAP KECIL
+  // Buat kamera untuk map kecil
   var createHudCamera = function (map) {
     var width = map.right - map.left,
       height = map.top - map.bottom;
@@ -237,32 +214,30 @@
     return hudCamera;
   };
 
+  //   Mengatur ukuran pacman, dots, dan hantu di map kecil
   var renderHud = function (renderer, hudCamera, scene) {
-    // Increase size of pacman and dots in HUD to make them easier to see.
     scene.children.forEach(function (object) {
       if (object.isWall !== true) object.scale.set(2.5, 2.5, 2.5);
     });
 
-    // Only render in the bottom left 200x200 square of the screen.
+    // Hanya merender di bagian kiri bawah dengan map berukuran 200x200
     renderer.enableScissorTest(true);
     renderer.setScissor(10, 10, 200, 200);
     renderer.setViewport(10, 10, 200, 200);
     renderer.render(scene, hudCamera);
     renderer.enableScissorTest(false);
 
-    // Reset scales after rendering HUD.
     scene.children.forEach(function (object) {
       object.scale.set(1, 1, 1);
     });
   };
 
+  //   buat objek pacman
   var createPacman = (function () {
-    // Create spheres with decreasingly small horizontal sweeps, in order
-    // to create pacman "death" animation.
     var pacmanGeometries = [];
     var numFrames = 40;
     var offset;
-    // memotong pacman secara bertahap (horizontal)
+    // untuk mengecilkan pacman ketika menabrak hantu
     for (var i = 0; i < numFrames; i++) {
       offset = (i / (numFrames - 1)) * Math.PI;
       pacmanGeometries.push(new THREE.SphereGeometry(PACMAN_RADIUS, 16, 16, offset, Math.PI * 2 - offset * 2));
@@ -282,7 +257,7 @@
       pacman.atePellet = false;
       pacman.distanceMoved = 0;
 
-      // Initialize pacman facing to the left.
+      // Inisialisasi posisi pacman mengarah ke kiri
       pacman.position.copy(position);
       pacman.direction = new THREE.Vector3(-1, 0, 0);
 
@@ -292,7 +267,8 @@
     };
   })();
 
-  var createGhost = function () {
+  //   buat hantu
+  var createGhost = (function () {
     // Create a cone-shaped geometry for the ghost's body
     const ghostBodyGeometry = new THREE.SphereGeometry(GHOST_RADIUS, 16, 16); // Adjust dimensions as needed
     // ghostBodyGeometry.translate(0, 1, 0); // Position the cone correctly
@@ -301,48 +277,48 @@
     const ghostHeadGeometry = new THREE.CylinderGeometry(0.1, 0.15, 0.3); // Adjust dimensions as needed
     ghostHeadGeometry.translate(0, 0.35, 0.5); // Position the head correctly
 
-    const bodycolors = ['#e10d1b', '#f4c155', '#ea91bd', '#5ac2cb'];
+    const bodycolors = ["#e10d1b", "#f4c155", "#ea91bd", "#5ac2cb"];
 
     return function (scene, position, color) {
-        // Create the ghost's body
-        const randomz = bodycolors[Math.floor(Math.random() * bodycolors.length)];
-        const ghostMaterial = new THREE.MeshPhongMaterial({ color: randomz });
-        const ghost = new THREE.Mesh(ghostBodyGeometry, ghostMaterial);
+      // Create the ghost's body
+      const randomz = bodycolors[Math.floor(Math.random() * bodycolors.length)];
+      const ghostMaterial = new THREE.MeshPhongMaterial({ color: randomz });
+      const ghost = new THREE.Mesh(ghostBodyGeometry, ghostMaterial);
 
-        // Create the ghost's head
-        const headMaterial = new THREE.MeshPhongMaterial({ color: 'grey' }); // Use white for the head
-        const head = new THREE.Mesh(ghostHeadGeometry, headMaterial);
+      // Create the ghost's head
+      const headMaterial = new THREE.MeshPhongMaterial({ color: "grey" }); // Use white for the head
+      const head = new THREE.Mesh(ghostHeadGeometry, headMaterial);
 
-        // Add the head to the body
-        ghost.add(head);
+      // Add the head to the body
+      ghost.add(head);
 
-        // Add eyes to the ghost
-        const eyeGeometry = new THREE.CircleGeometry(0.07, 32); // Adjust eye size as needed
-        const eyeMaterial = new THREE.MeshBasicMaterial({ color: 'white' });
+      // Add eyes to the ghost
+      const eyeGeometry = new THREE.CircleGeometry(0.07, 32); // Adjust eye size as needed
+      const eyeMaterial = new THREE.MeshBasicMaterial({ color: "white" });
 
-        const leftEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
-        const rightEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+      const leftEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+      const rightEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
 
-        leftEye.position.set(-0.12, 0.1, 0.6); // Adjust eye position as needed
-        rightEye.position.set(0.12, 0.1, 0.6);
+      leftEye.position.set(-0.12, 0.1, 0.6); // Adjust eye position as needed
+      rightEye.position.set(0.12, 0.1, 0.6);
 
-        ghost.add(leftEye, rightEye);
+      ghost.add(leftEye, rightEye);
 
-        // Set ghost properties
-        ghost.isGhost = true;
-        ghost.isWrapper = true;
-        ghost.isAfraid = false;
+      // Set ghost properties
+      ghost.isGhost = true;
+      ghost.isWrapper = true;
+      ghost.isAfraid = false;
 
-        // Set ghost position and direction
-        ghost.position.copy(position);
-        ghost.direction = new THREE.Vector3(-1, 0, 0); // Start moving left
+      // Set ghost position and direction
+      ghost.position.copy(position);
+      ghost.direction = new THREE.Vector3(-1, 0, 0); // Start moving left
 
-        // Add the ghost to the scene
-        scene.add(ghost);
+      // Add the ghost to the scene
+      scene.add(ghost);
 
-        return ghost;
+      return ghost;
     };
-}();
+  })();
 
   // Make object wrap to other side of map if it goes out of bounds.
   var wrapObject = function (object, map) {
@@ -354,7 +330,6 @@
   };
 
   // Generic functions
-  // =================
   var distance = (function () {
     var difference = new THREE.Vector3();
 
@@ -726,7 +701,7 @@
         ghost.becameAfraidTime = now;
 
         // kalau mau ganti objek sabi
-        ghost.material.color.setStyle( '#2323fa' );
+        ghost.material.color.setStyle("#2323fa");
       }
 
       // Make ghosts not afraid anymore after 10 seconds.
