@@ -6,7 +6,7 @@
   var GHOST_SPEED = 1.5,
     GHOST_RADIUS = PACMAN_RADIUS * 1.25;
   var DOT_RADIUS = 0.05,
-    PELLET_RADIUS = DOT_RADIUS * 2;
+    PELLET_RADIUS = DOT_RADIUS * 3;
   var UP = new THREE.Vector3(0, 0, 1);
   var LEFT = new THREE.Vector3(-1, 0, 0);
   var TOP = new THREE.Vector3(0, 1, 0);
@@ -292,25 +292,57 @@
     };
   })();
 
-  var createGhost = (function () {
-    // buat hantu, ganti objek sabi
-    var ghostGeometry = new THREE.SphereGeometry(GHOST_RADIUS, 16, 16);
+  var createGhost = function () {
+    // Create a cone-shaped geometry for the ghost's body
+    const ghostBodyGeometry = new THREE.SphereGeometry(GHOST_RADIUS, 16, 16); // Adjust dimensions as needed
+    // ghostBodyGeometry.translate(0, 1, 0); // Position the cone correctly
 
-    return function (scene, position) {
-      // Give each ghost it's own material so we can change the colors of individual ghosts.
-      var ghostMaterial = new THREE.MeshPhongMaterial({ color: "red" });
-      var ghost = new THREE.Mesh(ghostGeometry, ghostMaterial);
-      ghost.isGhost = true;
-      ghost.isWrapper = true;
-      ghost.isAfraid = false;
+    // Create a smaller, inverted cone for the head
+    const ghostHeadGeometry = new THREE.CylinderGeometry(0.1, 0.15, 0.3); // Adjust dimensions as needed
+    ghostHeadGeometry.translate(0, 0.35, 0.5); // Position the head correctly
 
-      // Ghosts start moving left.
-      ghost.position.copy(position);
-      ghost.direction = new THREE.Vector3(-1, 0, 0);
+    const bodycolors = ['#e10d1b', '#f4c155', '#ea91bd', '#5ac2cb'];
 
-      scene.add(ghost);
+    return function (scene, position, color) {
+        // Create the ghost's body
+        const randomz = bodycolors[Math.floor(Math.random() * bodycolors.length)];
+        const ghostMaterial = new THREE.MeshPhongMaterial({ color: randomz });
+        const ghost = new THREE.Mesh(ghostBodyGeometry, ghostMaterial);
+
+        // Create the ghost's head
+        const headMaterial = new THREE.MeshPhongMaterial({ color: 'grey' }); // Use white for the head
+        const head = new THREE.Mesh(ghostHeadGeometry, headMaterial);
+
+        // Add the head to the body
+        ghost.add(head);
+
+        // Add eyes to the ghost
+        const eyeGeometry = new THREE.CircleGeometry(0.07, 32); // Adjust eye size as needed
+        const eyeMaterial = new THREE.MeshBasicMaterial({ color: 'white' });
+
+        const leftEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+        const rightEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+
+        leftEye.position.set(-0.12, 0.1, 0.6); // Adjust eye position as needed
+        rightEye.position.set(0.12, 0.1, 0.6);
+
+        ghost.add(leftEye, rightEye);
+
+        // Set ghost properties
+        ghost.isGhost = true;
+        ghost.isWrapper = true;
+        ghost.isAfraid = false;
+
+        // Set ghost position and direction
+        ghost.position.copy(position);
+        ghost.direction = new THREE.Vector3(-1, 0, 0); // Start moving left
+
+        // Add the ghost to the scene
+        scene.add(ghost);
+
+        return ghost;
     };
-  })();
+}();
 
   // Make object wrap to other side of map if it goes out of bounds.
   var wrapObject = function (object, map) {
@@ -694,7 +726,7 @@
         ghost.becameAfraidTime = now;
 
         // kalau mau ganti objek sabi
-        ghost.material.color.setStyle("white");
+        ghost.material.color.setStyle( '#2323fa' );
       }
 
       // Make ghosts not afraid anymore after 10 seconds.
