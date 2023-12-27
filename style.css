@@ -35,6 +35,7 @@ button {
   left: 1em;
   padding: 0.5em 1em;
   cursor: pointer;
+  font-weight: 700;
 }
 
 #help-button:hover {
