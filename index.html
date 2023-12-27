@@ -1,25 +1,30 @@
-<!doctype html>
-<html>
-    <head>
-        <link rel="stylesheet" href="style.css" />
-    </head>
-    <body>
-        <div id="lives"></div>
-
-        <button id="help-button" onclick="var dialog = document.getElementById('help-dialog'); dialog.style.display = 'block';">HELP</button>
-
-        <div id="help-dialog" class="dialog">
-            <h2>CONTROLS</h2>
-
-            <p>WASD: Use W/S to move forward/backward and A/D to turn left/right.</p>
-
-            <p>After you collect all of the dots, the game will start over but pacman and the ghosts will get a little bit faster!<p>
-
-            <button onclick="var dialog = document.getElementById('help-dialog'); dialog.style.display = 'none';">Close</button>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Cover Page</title>
+    <link rel="stylesheet" type="text/css" href="https://demo.plantpot.works/assets/css/normalize.css" />
+    <link rel="stylesheet" href="https://use.typekit.net/opg3wle.css" />
+    <link href="https://use.fontawesome.com/releases/v5.6.1/css/all.css" rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" href="cover.css" />
+  </head>
+  <body>
+    <div id="container">
+      <div class="box">
+        <h1>ARE U READY KIDS???</h1>
+        <div class="buttons">
+          <button id="start" class="button button-start" type="button" name="button">Start</button>
         </div>
+      </div>
+    </div>
 
-        <script src="three.js"></script> 
-        <script src="helvetiker_regular.typeface.js"></script>
-        <script src="game.js"></script>
-    </body>
+    <script>
+      // Menangani saat tombol login ditekan
+      document.getElementById("start").addEventListener("click", function (event) {
+        // Mengarahkan pengguna ke halaman lain (ganti "dashboard.html" dengan halaman tujuan yang sesuai)
+        window.location.href = "./game.html";
+      });
+    </script>
+  </body>
 </html>
